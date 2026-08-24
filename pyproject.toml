@@ -1,0 +1,39 @@
+[project]
+name = "textfaith"
+version = "1.0.0"
+description = "Deletion faithfulness benchmark for word attribution methods in text classification (SHAP, LIME, occlusion)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "shap>=0.52.0",
+    "torch>=2.13.0",
+    "transformers>=4.44.0",
+    "pandas>=2.2.0",
+    "pyarrow>=17.0.0",
+    "scikit-learn>=1.5.0",
+    "joblib>=1.4.0",
+    "ipykernel>=6.29.0",
+    "notebook>=7.2.0",
+    "matplotlib>=3.9.0",
+    "lime>=0.2.0.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/textfaith"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
