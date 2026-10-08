@@ -141,7 +141,7 @@ Follow what is already there. The existing modules are the specification.
 
 - Spell identifiers out in full. `predict_probabilities`, not `predict_proba`;
   `MAXIMUM_TOKEN_COUNT`, not `MAX_TOKENS`.
-- No em dashes anywhere, in code comments, docstrings or prose.
+- House style uses commas, colons and full sentences rather than em dashes, in code comments, docstrings and prose.
 - YAGNI. No speculative flags, no second comparison method added just in case, no
   third overlapping metric.
 - Docstrings explain why a choice was made, not what the code does. See
@@ -151,7 +151,7 @@ Follow what is already there. The existing modules are the specification.
 
 ## Verifying a change
 
-Before handing work back, run both of these.
+Before submitting a change, run both of these.
 
 ```bash
 uv run pytest                          # unit tests must pass

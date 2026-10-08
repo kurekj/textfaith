@@ -61,8 +61,8 @@ It trains a small classifier on a synthetic corpus with planted sentiment words,
 
 A word attribution method claims to rank words by their contribution to a classifier's prediction. `textfaith` tests that claim directly:
 
-1. **Sufficiency** — delete the *least* important spans; a faithful ranking discards only noise, so the output should barely move (lower is better).
-2. **Comprehensiveness** — delete the *most* important spans; removing the text the model relies on should disrupt the output (higher is better).
+1. **Sufficiency**: delete the *least* important spans; a faithful ranking discards only noise, so the output should barely move (lower is better).
+2. **Comprehensiveness**: delete the *most* important spans; removing the text the model relies on should disrupt the output (higher is better).
 
 Deletions operate on **chunks** of 1, 4 or 8 consecutive words (intended to keep the surviving text closer to language than scattered single-word cuts), chunk scores are built from the signed word attributions by three combination rules (`absolute_sum`, `sum_absolute`, `max_absolute`), and all scores are relative to the model's original predicted-class confidence, making them comparable across tasks. Every comparison is paired per document and tested with a Wilcoxon signed-rank test with Holm correction.
 
