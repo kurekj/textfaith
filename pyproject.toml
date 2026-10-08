@@ -1,6 +1,6 @@
 [project]
 name = "textfaith"
-version = "1.0.0"
+version = "1.0.1"
 description = "Deletion faithfulness benchmark for word attribution methods in text classification (SHAP, LIME, occlusion)"
 readme = "README.md"
 requires-python = ">=3.13"

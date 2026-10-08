@@ -64,20 +64,32 @@ A word attribution method claims to rank words by their contribution to a classi
 1. **Sufficiency** — delete the *least* important spans; a faithful ranking discards only noise, so the output should barely move (lower is better).
 2. **Comprehensiveness** — delete the *most* important spans; removing the text the model relies on should disrupt the output (higher is better).
 
-Deletions operate on **chunks** of 1, 4 or 8 consecutive words (so the surviving text still reads as language), chunk scores are built from word attributions by three combination rules (`absolute_sum`, `sum_absolute`, `max_absolute`), and all scores are relative to the model's original predicted-class confidence, making them comparable across tasks. Every comparison is paired per document and tested with a Wilcoxon signed-rank test with Holm correction.
+Deletions operate on **chunks** of 1, 4 or 8 consecutive words (intended to keep the surviving text closer to language than scattered single-word cuts), chunk scores are built from the signed word attributions by three combination rules (`absolute_sum`, `sum_absolute`, `max_absolute`), and all scores are relative to the model's original predicted-class confidence, making them comparable across tasks. Every comparison is paired per document and tested with a Wilcoxon signed-rank test with Holm correction.
+
+`absolute_sum` takes the magnitude of a chunk's signed sum. For SHAP, whose attributions sum to the output difference between the full and the fully masked text, that sum is the estimate of the chunk's deletion effect that an additive model would give: it equals the actual effect when the chunk's words do not interact with the rest of the text and is an approximation otherwise, so a chunk holding +0.05 and -0.05 is ranked as cheap to remove. `sum_absolute` totals the magnitudes and ranks the same chunk as important; `max_absolute` scores a chunk by its single strongest word. At chunk size 1 all three coincide. LIME's weights carry no such sum guarantee, so for LIME the choice between rules is an empirical question.
+
+## Scope and limitations
+
+- `textfaith` measures **deletion faithfulness** under one masking protocol: whitespace words, removed spans replaced by a fixed marker. It is one dimension of explanation quality. A high score does not establish that an explanation is correct in general, plausible, or useful to a person.
+- The random baseline arm is a **sanity check**, not a validation of the metric: a method that loses to random rankings fails the check, but beating random does not show that the metric separates plausible methods from one another.
+- Cut text is off the training distribution, so part of any output movement reflects the perturbation itself rather than the ranking. The random baseline measures how much the output moves when the same share of text is deleted without any information about the model, and comparisons against it discount that uninformed movement, but not the part that may correlate with the ranking under test (a method that concentrates importance on rare or syntactically load-bearing words may produce more disfluent cut text and would then be credited for it). The controls proposed for that residual are remove-and-retrain and fluency-preserving maskers; every attribution and measurement function takes the masker as an argument, so such a variant can be scored with the rest of the protocol unchanged, but the bundled benchmark runs neither control.
+- Scores are defined at the word level, not for subword tokens or semantic phrases, and depend on the masking semantics.
+- The bundled benchmark covers three tasks served by one classifier family (frozen `e5-small-v2` encoder with a small head) under a single random seed. Its findings about SHAP, LIME, occlusion and evaluation budgets hold for that configuration and are meant to be re-measured on your own model, which is what the library is for.
 
 ## Benchmark results
 
-Three binary classification tasks (IMDB and Yelp sentiment, AG News topic; frozen e5-small-v2 encoder + MLP head, test accuracy 0.89–0.96), 300 explained documents per dataset, budgets of 50/200/500 model calls per document, 54 conditions per comparison:
+Three binary classification tasks (IMDB and Yelp sentiment, AG News topic; frozen e5-small-v2 encoder + MLP head, test accuracy 0.89–0.96), 300 explained documents per dataset, budgets of 50/200/500 model calls per document, 54 conditions per comparison. Mean advantage is the paired per-document difference averaged over conditions, in percentage points of the model's original confidence:
 
-| Comparison | Result |
-|---|---|
-| SHAP vs random baseline | wins 54/54 Holm-corrected conditions, loses 0 |
-| LIME vs random baseline | wins 54/54, loses 0 |
-| Occlusion vs random baseline | wins 52/54, loses 0 |
-| SHAP vs LIME (budget 500) | 31/54 conditions significant: 25 favor SHAP, 6 LIME |
-| Cost per document (budget 500) | SHAP 7.8 s, LIME 18.7 s |
-| `absolute_sum` vs other combinations | wins 24/48, loses 0 |
+| Comparison | Result | Mean advantage |
+|---|---|---|
+| SHAP vs random baseline | wins 54/54 Holm-corrected conditions, loses 0 | 10.15 |
+| LIME vs random baseline | wins 54/54, loses 0 | 8.26 |
+| Occlusion vs random baseline | wins 52/54, loses 0 | 6.49 |
+| SHAP vs LIME (budget 500) | 31/54 conditions significant: 25 favor SHAP, 6 LIME | 1.89 (median 3.77 where SHAP wins) |
+| Cost per document (budget 500) | SHAP 7.8 s, LIME 18.7 s | |
+| `absolute_sum` vs other combinations | wins 24/48, loses 0 | 0.33 to 1.64 |
+
+These numbers describe the evaluated classifiers, not the attribution methods in general (see below).
 
 ## Repository layout
 
